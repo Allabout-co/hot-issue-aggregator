@@ -353,8 +353,51 @@ body {
   color: var(--text);
 }
 
+.to-top {
+  position: fixed;
+  right: 16px;
+  bottom: 16px;
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  border: 1px solid var(--border);
+  background: var(--accent);
+  color: #fff;
+  font-size: 16px;
+  cursor: pointer;
+  z-index: 20;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.4);
+}
+.to-top[hidden] {
+  display: none;
+}
+
 @media (max-width: 880px) {
   .layout {
     grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 520px) {
+  .topbar {
+    padding: 12px 14px;
+  }
+  .brand .tagline {
+    display: none;
+  }
+  .logo {
+    font-size: 24px;
+  }
+  .brand h1 {
+    font-size: 18px;
+  }
+  .filters {
+    padding: 12px 14px 2px;
+  }
+  .layout {
+    padding: 14px 14px 32px;
+  }
+  .refresh {
+    padding: 7px 10px;
   }
 }

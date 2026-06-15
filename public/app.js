@@ -4,6 +4,9 @@ let CATEGORIES = [];
 let CAT_MAP = {};
 let activeFilter = "all"; // "all" | sourceId
 let activeCat = "all"; // "all" | categoryId
+let SRC_COUNTS = {}; // 소스별 현재 수집 건수 (0이면 칩·컬럼 숨김)
+
+const hasData = (id) => (SRC_COUNTS[id] ?? 1) > 0;
 
 const $ = (sel) => document.querySelector(sel);
 
@@ -32,7 +35,10 @@ function renderFilters() {
        ${color ? `<span class="dot" style="background:${color}"></span>` : ""}${esc(name)}
      </button>`;
   wrap.innerHTML =
-    chip("all", "전체", "") + SOURCES.map((s) => chip(s.id, s.name, s.color)).join("");
+    chip("all", "전체", "") +
+    SOURCES.filter((s) => hasData(s.id))
+      .map((s) => chip(s.id, s.name, s.color))
+      .join("");
   wrap.querySelectorAll(".chip").forEach((c) =>
     c.addEventListener("click", () => {
       activeFilter = c.dataset.id;
@@ -97,7 +103,8 @@ function renderHot(hot) {
 }
 
 function renderSources(bySource, status) {
-  const cols = SOURCES.filter((s) => activeFilter === "all" || s.id === activeFilter)
+  const cols = SOURCES.filter((s) => hasData(s.id))
+    .filter((s) => activeFilter === "all" || s.id === activeFilter)
     .map((s) => {
       const posts = (bySource[s.id] || []).filter(matchCat);
       const st = status.find((x) => x.sourceId === s.id);
@@ -158,6 +165,9 @@ function renderBriefing(data) {
 async function load() {
   const res = await fetch("/api/feed");
   const data = await res.json();
+  SRC_COUNTS = Object.fromEntries((data.status || []).map((s) => [s.sourceId, s.count]));
+  if (activeFilter !== "all" && !hasData(activeFilter)) activeFilter = "all";
+  renderFilters();
   renderBriefing(data);
   renderHot(data.hot || []);
   renderSources(data.bySource || {}, data.status || []);
@@ -179,6 +189,13 @@ async function init() {
   renderCatFilters();
   await load();
   setInterval(load, 60000); // 1분마다 화면 갱신
+
+  // 위로 가기 버튼
+  const toTop = $("#toTop");
+  window.addEventListener("scroll", () => {
+    toTop.hidden = window.scrollY < 400;
+  });
+  toTop.addEventListener("click", () => window.scrollTo({ top: 0, behavior: "smooth" }));
 
   $("#refreshBtn").addEventListener("click", async () => {
     $("#refreshBtn").textContent = "↻ 수집 중…";
