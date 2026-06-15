@@ -77,8 +77,13 @@ function hotItemHTML(p, i) {
     p.crossSources && p.crossSources.length > 1
       ? `<span class="cross">🔥 ${p.crossSources.length}개 커뮤니티</span>`
       : "";
+  const thumb = `<span class="thumb" style="background:${m.color}">
+      ${p.thumbnail ? `<img src="${esc(p.thumbnail)}" alt="" loading="lazy" referrerpolicy="no-referrer" onerror="this.remove()">` : ""}
+      <span class="thumb-ph">${m.badge}</span>
+    </span>`;
   return `<a class="hot-item" href="${p.link}" target="_blank" rel="noopener">
     <span class="rank">${i + 1}</span>
+    ${thumb}
     <span class="hot-main">
       <span class="hot-title">${esc(p.title)}</span>
       <span class="hot-meta">
