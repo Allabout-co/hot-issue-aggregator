@@ -1,0 +1,191 @@
+// 프론트엔드 로직: /api/feed, /api/sources 폴링 + 렌더링
+let SOURCES = [];
+let CATEGORIES = [];
+let CAT_MAP = {};
+let activeFilter = "all"; // "all" | sourceId
+let activeCat = "all"; // "all" | categoryId
+
+const $ = (sel) => document.querySelector(sel);
+
+function timeAgo(ms) {
+  const diff = Date.now() - ms;
+  const m = Math.floor(diff / 60000);
+  if (m < 1) return "방금";
+  if (m < 60) return `${m}분 전`;
+  const h = Math.floor(m / 60);
+  if (h < 24) return `${h}시간 전`;
+  return `${Math.floor(h / 24)}일 전`;
+}
+
+function srcMeta(id) {
+  return SOURCES.find((s) => s.id === id) || { name: id, color: "#888", badge: "?" };
+}
+
+function esc(s = "") {
+  return s.replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
+}
+
+function renderFilters() {
+  const wrap = $("#filters");
+  const chip = (id, name, color) =>
+    `<button class="chip ${activeFilter === id ? "active" : ""}" data-id="${id}">
+       ${color ? `<span class="dot" style="background:${color}"></span>` : ""}${esc(name)}
+     </button>`;
+  wrap.innerHTML =
+    chip("all", "전체", "") + SOURCES.map((s) => chip(s.id, s.name, s.color)).join("");
+  wrap.querySelectorAll(".chip").forEach((c) =>
+    c.addEventListener("click", () => {
+      activeFilter = c.dataset.id;
+      renderFilters();
+      load();
+    })
+  );
+}
+
+function renderCatFilters() {
+  const wrap = $("#catFilters");
+  const chip = (id, label) =>
+    `<button class="chip ${activeCat === id ? "active" : ""}" data-id="${id}">${esc(label)}</button>`;
+  wrap.innerHTML =
+    chip("all", "전체 카테고리") +
+    CATEGORIES.map((c) => chip(c.id, `${c.emoji} ${c.name}`)).join("");
+  wrap.querySelectorAll(".chip").forEach((c) =>
+    c.addEventListener("click", () => {
+      activeCat = c.dataset.id;
+      renderCatFilters();
+      load();
+    })
+  );
+}
+
+function catBadge(catId) {
+  const c = CAT_MAP[catId];
+  return c ? `<span class="cat-badge">${c.emoji} ${esc(c.name)}</span>` : "";
+}
+
+const matchCat = (p) => activeCat === "all" || p.category === activeCat;
+
+function hotItemHTML(p, i) {
+  const m = srcMeta(p.sourceId);
+  const cross =
+    p.crossSources && p.crossSources.length > 1
+      ? `<span class="cross">🔥 ${p.crossSources.length}개 커뮤니티</span>`
+      : "";
+  return `<a class="hot-item" href="${p.link}" target="_blank" rel="noopener">
+    <span class="rank">${i + 1}</span>
+    <span class="hot-main">
+      <span class="hot-title">${esc(p.title)}</span>
+      <span class="hot-meta">
+        <span class="src-badge" style="background:${m.color}">${m.badge}</span>
+        ${catBadge(p.category)}
+        ${cross}
+        <span>${esc(m.name)}</span>
+        <span>· ${timeAgo(p.publishedAt)}</span>
+        ${p.signals?.comments ? `<span>· 💬 ${p.signals.comments}</span>` : ""}
+      </span>
+    </span>
+    <span class="score">🔥 ${p.score}</span>
+  </a>`;
+}
+
+function renderHot(hot) {
+  const list = hot.filter(
+    (p) => (activeFilter === "all" || p.sourceId === activeFilter) && matchCat(p)
+  );
+  $("#hotList").innerHTML =
+    list.map(hotItemHTML).join("") || `<li class="src-down">표시할 글이 없습니다.</li>`;
+}
+
+function renderSources(bySource, status) {
+  const cols = SOURCES.filter((s) => activeFilter === "all" || s.id === activeFilter)
+    .map((s) => {
+      const posts = (bySource[s.id] || []).filter(matchCat);
+      const st = status.find((x) => x.sourceId === s.id);
+      const body =
+        posts.length === 0
+          ? `<div class="src-down">${st && !st.ok ? "수집 실패 — 잠시 후 재시도" : activeCat !== "all" ? "이 카테고리 글 없음" : "수집 대기 중…"}</div>`
+          : `<ol class="src-list">${posts
+              .slice(0, 12)
+              .map(
+                (p, i) =>
+                  `<li><a href="${p.link}" target="_blank" rel="noopener">
+                     <span class="n">${i + 1}</span><span class="t">${esc(p.title)}</span>
+                   </a></li>`
+              )
+              .join("")}</ol>`;
+      return `<div class="src-col">
+        <div class="src-head">
+          <span class="badge" style="background:${s.color}">${s.badge}</span>
+          ${esc(s.name)}<span class="cnt">${posts.length}</span>
+        </div>${body}
+      </div>`;
+    })
+    .join("");
+  $("#sourceCols").innerHTML = cols;
+}
+
+// 아주 작은 마크다운(### 헤더, **굵게**, 줄바꿈)만 렌더
+function miniMarkdown(md = "") {
+  return esc(md)
+    .replace(/^###\s*(.+)$/gm, "<h4>$1</h4>")
+    .replace(/\*\*(.+?)\*\*/g, "<strong>$1</strong>")
+    .replace(/\n{2,}/g, "<br><br>")
+    .replace(/\n/g, "<br>");
+}
+
+function renderBriefing(data) {
+  const el = $("#briefing");
+  const b = data.briefing;
+  if (data.briefingEnabled === false) {
+    el.hidden = false;
+    el.innerHTML = `<div class="brief-head">🤖 AI 브리핑</div>
+      <p class="brief-off">환경변수 <code>ANTHROPIC_API_KEY</code>를 설정하면 핫이슈 자동 요약이 켜집니다.</p>`;
+    return;
+  }
+  if (!b || (!b.text && !b.error)) {
+    el.hidden = true;
+    return;
+  }
+  el.hidden = false;
+  if (b.error) {
+    el.innerHTML = `<div class="brief-head">🤖 AI 브리핑</div><p class="brief-off">요약 생성 실패: ${esc(b.error)}</p>`;
+    return;
+  }
+  el.innerHTML = `<div class="brief-head">🤖 오늘의 핫이슈 브리핑 <span class="brief-meta">${esc(b.model || "")} · ${timeAgo(b.generatedAt)}</span></div>
+    <div class="brief-body">${miniMarkdown(b.text)}</div>`;
+}
+
+async function load() {
+  const res = await fetch("/api/feed");
+  const data = await res.json();
+  renderBriefing(data);
+  renderHot(data.hot || []);
+  renderSources(data.bySource || {}, data.status || []);
+  const dot = (on) => (on ? "🟢" : "⚪");
+  $("#integrations").innerHTML =
+    `연동: ${dot(data.briefingEnabled)} AI 브리핑 · ${dot(data.notifyEnabled)} 텔레그램 푸시`;
+  $("#updated").textContent = data.collectedAt
+    ? `업데이트 ${timeAgo(data.collectedAt)}`
+    : "수집 대기 중…";
+}
+
+async function init() {
+  [SOURCES, CATEGORIES] = await Promise.all([
+    fetch("/api/sources").then((r) => r.json()),
+    fetch("/api/categories").then((r) => r.json()),
+  ]);
+  CAT_MAP = Object.fromEntries(CATEGORIES.map((c) => [c.id, c]));
+  renderFilters();
+  renderCatFilters();
+  await load();
+  setInterval(load, 60000); // 1분마다 화면 갱신
+
+  $("#refreshBtn").addEventListener("click", async () => {
+    $("#refreshBtn").textContent = "↻ 수집 중…";
+    await fetch("/api/refresh", { method: "POST" });
+    await load();
+    $("#refreshBtn").textContent = "↻ 새로고침";
+  });
+}
+
+init();

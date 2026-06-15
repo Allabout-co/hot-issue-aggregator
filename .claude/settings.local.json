@@ -1,0 +1,15 @@
+{
+  "permissions": {
+    "allow": [
+      "PowerShell(node --version)",
+      "PowerShell(npm --version)",
+      "PowerShell(python --version)",
+      "PowerShell(py --version; python3 --version; \\(Get-Command python -ErrorAction SilentlyContinue\\).Source)",
+      "PowerShell($env:Path = [System.Environment]::GetEnvironmentVariable\\(\"Path\",\"Machine\"\\) + \";\" + [System.Environment]::GetEnvironmentVariable\\(\"Path\",\"User\"\\); node --version; npm --version)",
+      "PowerShell($r = Invoke-RestMethod \"http://localhost:3000/api/feed\"; \"collectedAt: $\\([DateTimeOffset]::FromUnixTimeMilliseconds\\($r.collectedAt\\).LocalDateTime\\)\"; \"status:\"; $r.status | ForEach-Object { \"  $\\($_.sourceId\\): ok=$\\($_.ok\\) count=$\\($_.count\\)\" }; \"\"; \"통합 핫랭킹 TOP 8:\"; $r.hot | Select-Object -First 8 | ForEach-Object { \"  🔥$\\($_.score\\) [$\\($_.sourceId\\)] $\\($_.title\\)\" })",
+      "mcp__Claude_Preview__preview_start",
+      "Skill(claude-api)",
+      "Skill(claude-api:*)"
+    ]
+  }
+}

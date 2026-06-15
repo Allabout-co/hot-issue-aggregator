@@ -1,0 +1,19 @@
+# Render Blueprint — https://render.com
+# New + → Blueprint → 이 저장소 선택 → Apply 하면 자동 배포됩니다.
+services:
+  - type: web
+    name: hot-issue-aggregator
+    runtime: node
+    plan: free
+    buildCommand: npm install
+    startCommand: npm start
+    envVars:
+      # 선택 기능 — Render 대시보드에서 값만 채우면 켜집니다(없으면 자동 비활성).
+      - key: ANTHROPIC_API_KEY
+        sync: false
+      - key: BRIEFING_MODEL
+        sync: false
+      - key: TELEGRAM_BOT_TOKEN
+        sync: false
+      - key: TELEGRAM_CHAT_ID
+        sync: false

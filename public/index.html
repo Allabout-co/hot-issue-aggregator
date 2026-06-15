@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="ko">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>🔥 핫이슈 — 한국 커뮤니티 실시간 모아보기</title>
+    <link rel="stylesheet" href="/style.css" />
+  </head>
+  <body>
+    <header class="topbar">
+      <div class="brand">
+        <span class="logo">🔥</span>
+        <div>
+          <h1>핫이슈</h1>
+          <p class="tagline">여러 커뮤니티의 지금 가장 뜨거운 글, 한 화면에서</p>
+        </div>
+      </div>
+      <div class="actions">
+        <span id="updated" class="updated">불러오는 중…</span>
+        <button id="refreshBtn" class="refresh">↻ 새로고침</button>
+      </div>
+    </header>
+
+    <nav id="filters" class="filters"></nav>
+    <nav id="catFilters" class="filters cat-filters"></nav>
+
+    <section id="briefing" class="briefing" hidden></section>
+
+    <main class="layout">
+      <section class="hot-col">
+        <h2 class="col-title">🔥 통합 핫랭킹</h2>
+        <ol id="hotList" class="hot-list"></ol>
+      </section>
+
+      <section class="sources-wrap">
+        <h2 class="col-title">커뮤니티별</h2>
+        <div id="sourceCols" class="source-cols"></div>
+      </section>
+    </main>
+
+    <footer class="foot">
+      <div id="integrations" class="integrations"></div>
+      모든 글의 저작권은 원작성자/커뮤니티에 있으며, 제목·링크만 제공하고 클릭 시 원문으로 이동합니다.
+    </footer>
+
+    <script src="/app.js"></script>
+  </body>
+</html>
