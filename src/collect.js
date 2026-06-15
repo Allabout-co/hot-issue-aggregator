@@ -103,8 +103,26 @@ async function collectHN(source) {
 async function collectScrape(source) {
   const ctrl = new AbortController();
   const t = setTimeout(() => ctrl.abort(), 9000);
+  // 클라우드 IP 차단(에펨 등) 우회 시도: 실제 브라우저에 가까운 헤더
+  const origin = new URL(source.url).origin;
   const res = await fetch(source.url, {
-    headers: { "User-Agent": UA, "Accept-Language": "ko-KR,ko;q=0.9" },
+    headers: {
+      "User-Agent": UA,
+      Accept:
+        "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8",
+      "Accept-Language": "ko-KR,ko;q=0.9,en-US;q=0.8,en;q=0.7",
+      "Accept-Encoding": "gzip, deflate, br",
+      "Cache-Control": "max-age=0",
+      Referer: source.referer || origin + "/",
+      "Upgrade-Insecure-Requests": "1",
+      "Sec-Fetch-Dest": "document",
+      "Sec-Fetch-Mode": "navigate",
+      "Sec-Fetch-Site": "same-origin",
+      "Sec-Fetch-User": "?1",
+      "sec-ch-ua": '"Chromium";v="124", "Google Chrome";v="124", "Not-A.Brand";v="99"',
+      "sec-ch-ua-mobile": "?0",
+      "sec-ch-ua-platform": '"Windows"',
+    },
     signal: ctrl.signal,
   });
   clearTimeout(t);
