@@ -6,6 +6,7 @@ import { collectAll } from "./collect.js";
 import { rankAll } from "./rank.js";
 import { generateBriefing, briefingEnabled } from "./briefing.js";
 import { pushHot } from "./notify.js";
+import { getFreshIngest } from "./ingest.js";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const DATA_FILE = join(__dirname, "..", "data", "posts.json");
@@ -22,12 +23,21 @@ export async function refresh() {
   refreshing = true;
   try {
     const { posts, status, collectedAt } = await collectAll();
-    const { hot, bySource } = rankAll(posts);
+    // 외부 수집기(내 PC)가 push한 글 합치기(펨코 등)
+    const ingested = getFreshIngest();
+    const allPosts = posts.concat(ingested);
+    const { hot, bySource } = rankAll(allPosts);
+    // ingest 소스 건수를 status에 반영(프론트의 빈 소스 숨김이 풀리도록)
+    const ingCount = {};
+    ingested.forEach((p) => (ingCount[p.sourceId] = (ingCount[p.sourceId] || 0) + 1));
+    const status2 = status.map((s) =>
+      ingCount[s.sourceId] ? { ...s, ok: true, count: ingCount[s.sourceId] } : s
+    );
     // 직전 브리핑은 유지하다가, LLM이 켜져 있으면 새로 생성해 교체
-    cache = { collectedAt, status, hot, bySource, briefing: cache.briefing };
-    const okCount = status.filter((s) => s.ok).length;
+    cache = { collectedAt, status: status2, hot, bySource, briefing: cache.briefing };
+    const okCount = status2.filter((s) => s.ok).length;
     console.log(
-      `[refresh] ${new Date(collectedAt).toLocaleTimeString("ko-KR")} · 소스 ${okCount}/${status.length} · 글 ${posts.length}개`
+      `[refresh] ${new Date(collectedAt).toLocaleTimeString("ko-KR")} · 소스 ${okCount}/${status2.length} · 글 ${allPosts.length}개(ingest ${ingested.length})`
     );
     if (briefingEnabled()) {
       cache.briefing = await generateBriefing(hot);

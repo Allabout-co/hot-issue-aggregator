@@ -134,6 +134,8 @@ async function collectScrape(source) {
 
 export async function collectSource(source) {
   try {
+    // ingest 소스는 서버가 직접 안 긁고 외부 수집기 push로 채워짐
+    if (source.type === "ingest") return { ok: true, sourceId: source.id, items: [] };
     const items =
       source.type === "hn"
         ? await collectHN(source)

@@ -7,11 +7,13 @@ import { getCache, refresh, loadFromDisk, startScheduler } from "./src/store.js"
 import { briefingEnabled } from "./src/briefing.js";
 import { CATEGORIES } from "./src/categorize.js";
 import { notifyEnabled, sendTest, loadSent } from "./src/notify.js";
+import { ingestEnabled, verifyToken, putIngest } from "./src/ingest.js";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const app = express();
 const PORT = process.env.PORT || 3000;
 
+app.use(express.json({ limit: "1mb" }));
 app.use(express.static(join(__dirname, "public")));
 
 // 소스 메타 정보
@@ -49,6 +51,18 @@ app.post("/api/refresh", async (req, res) => {
 // 텔레그램 연결 테스트
 app.post("/api/notify/test", async (req, res) => {
   res.json(await sendTest());
+});
+
+// 외부 수집기(내 PC)가 펨코 등 글을 push하는 통로
+app.post("/api/ingest", (req, res) => {
+  if (!ingestEnabled())
+    return res.status(503).json({ ok: false, error: "INGEST_TOKEN 미설정(서버)" });
+  const { token, sourceId, items } = req.body || {};
+  if (!verifyToken(token)) return res.status(401).json({ ok: false, error: "토큰 불일치" });
+  if (!sourceId || !Array.isArray(items))
+    return res.status(400).json({ ok: false, error: "sourceId/items 필요" });
+  putIngest(sourceId, items);
+  res.json({ ok: true, sourceId, received: items.length });
 });
 
 await loadFromDisk();

@@ -53,7 +53,7 @@ export const SOURCES = [
   {
     id: "fmkorea-best",
     name: "에펨 베스트",
-    type: "scrape",
+    type: "ingest", // 펨코는 클라우드 IP 차단 → 외부 수집기(내 PC)가 /api/ingest로 push
     scraper: "fmkorea",
     url: "https://www.fmkorea.com/index.php?mid=best",
     weight: 0.95,
