@@ -17,3 +17,10 @@ services:
         sync: false
       - key: TELEGRAM_CHAT_ID
         sync: false
+      # 자동 발행(여러 채널 동시) — 켜고 싶은 것만 값 입력
+      - key: DISCORD_WEBHOOK_URL
+        sync: false
+      - key: TELEGRAM_CHANNEL_ID
+        sync: false
+      - key: BROADCAST_INTERVAL_MIN
+        sync: false

@@ -8,6 +8,7 @@ import { briefingEnabled } from "./src/briefing.js";
 import { CATEGORIES } from "./src/categorize.js";
 import { notifyEnabled, sendTest, loadSent } from "./src/notify.js";
 import { ingestEnabled, verifyToken, putIngest } from "./src/ingest.js";
+import { broadcastEnabled, broadcastStatus, broadcast, loadBroadcasted } from "./src/broadcast.js";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const app = express();
@@ -39,6 +40,7 @@ app.get("/api/feed", (req, res) => {
     briefing: c.briefing,
     briefingEnabled: briefingEnabled(),
     notifyEnabled: notifyEnabled(),
+    broadcastEnabled: broadcastEnabled(),
   });
 });
 
@@ -67,7 +69,17 @@ app.post("/api/ingest", (req, res) => {
 
 await loadFromDisk();
 await loadSent();
+await loadBroadcasted();
 startScheduler(2 * 60 * 1000); // 2분마다 갱신(체감 실시간)
+
+// 자동 발행기: 설정된 채널(디스코드/텔레그램)로 주기 발행
+if (broadcastEnabled()) {
+  const ms = Number(process.env.BROADCAST_INTERVAL_MIN || 60) * 60 * 1000;
+  const ch = broadcastStatus();
+  console.log(`📡 자동발행 ON (디스코드 ${ch.discord} · 텔레그램 ${ch.telegram ? "O" : "X"}) · ${ms / 60000}분 간격`);
+  setTimeout(() => broadcast(getCache().hot), 30_000); // 첫 수집 후 1회
+  setInterval(() => broadcast(getCache().hot), ms);
+}
 
 app.listen(PORT, () => {
   console.log(`\n🔥 핫이슈 애그리게이터: http://localhost:${PORT}\n`);
