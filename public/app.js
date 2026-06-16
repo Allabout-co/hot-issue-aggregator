@@ -99,6 +99,7 @@ function hotItemHTML(p, i) {
     p.crossSources && p.crossSources.length > 1
       ? `<span class="cross">🔥 ${p.crossSources.length}개 커뮤니티</span>`
       : "";
+  const surge = p.surging ? `<span class="surge">📈 급상승</span>` : "";
   const thumb = `<span class="thumb" style="background:${m.color}">
       ${p.thumbnail ? `<img src="${esc(p.thumbnail)}" alt="" loading="lazy" referrerpolicy="no-referrer" onerror="this.remove()">` : ""}
       <span class="thumb-ph">${m.badge}</span>
@@ -110,6 +111,7 @@ function hotItemHTML(p, i) {
       <span class="hot-title">${esc(p.title)}</span>
       <span class="hot-meta">
         <span class="src-badge" style="background:${m.color}">${m.badge}</span>
+        ${surge}
         ${catBadge(p.category)}
         ${cross}
         <span>${esc(m.name)}</span>

@@ -7,6 +7,7 @@ import { rankAll } from "./rank.js";
 import { generateBriefing, briefingEnabled } from "./briefing.js";
 import { pushHot } from "./notify.js";
 import { getFreshIngest } from "./ingest.js";
+import { markTrending } from "./trending.js";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const DATA_FILE = join(__dirname, "..", "data", "posts.json");
@@ -26,6 +27,7 @@ export async function refresh() {
     // 외부 수집기(내 PC)가 push한 글 합치기(펨코 등)
     const ingested = getFreshIngest();
     const allPosts = posts.concat(ingested);
+    markTrending(allPosts); // 직전 대비 급상승 글 표시(p.surging)
     const { hot, bySource } = rankAll(allPosts);
     // ingest 소스 건수를 status에 반영(프론트의 빈 소스 숨김이 풀리도록)
     const ingCount = {};
