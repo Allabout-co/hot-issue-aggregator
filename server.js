@@ -51,33 +51,6 @@ app.post("/api/notify/test", async (req, res) => {
   res.json(await sendTest());
 });
 
-// [임시 진단] 서버(Render IP)가 펨코에서 실제로 무엇을 받는지 확인
-app.get("/api/debug/fmkorea", async (req, res) => {
-  try {
-    const r = await fetch("https://www.fmkorea.com/index.php?mid=best", {
-      headers: {
-        "User-Agent":
-          "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36",
-        Accept: "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
-        "Accept-Language": "ko-KR,ko;q=0.9",
-      },
-    });
-    const html = await r.text();
-    const low = html.toLowerCase();
-    res.json({
-      status: r.status,
-      length: html.length,
-      hasBestLink: html.includes("/best/"),
-      hasTitleClass: html.includes('class="title"'),
-      cloudflare: low.includes("just a moment") || low.includes("cf-chl") || low.includes("challenge-platform"),
-      jsOrCaptcha: low.includes("enable javascript") || low.includes("captcha") || low.includes("로봇이 아닙니다"),
-      snippet: html.slice(0, 400).replace(/\s+/g, " "),
-    });
-  } catch (e) {
-    res.json({ error: e.message });
-  }
-});
-
 await loadFromDisk();
 await loadSent();
 startScheduler(5 * 60 * 1000); // 5분마다 갱신
