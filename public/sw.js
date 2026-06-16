@@ -1,5 +1,5 @@
 // 최소 서비스워커 — 설치 가능(PWA) + 앱 셸 캐싱(오프라인 시 마지막 화면)
-const CACHE = "hotissue-v1";
+const CACHE = "hotissue-v2";
 const SHELL = ["/", "/style.css", "/app.js", "/favicon.svg", "/manifest.json"];
 
 self.addEventListener("install", (e) => {
