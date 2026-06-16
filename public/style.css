@@ -344,11 +344,15 @@ body {
   font-size: 10.5px;
   font-weight: 700;
 }
-.score {
-  font-size: 12px;
+.metric {
+  font-size: 12.5px;
   font-weight: 700;
-  color: var(--accent-2);
+  color: var(--text);
   white-space: nowrap;
+  font-variant-numeric: tabular-nums;
+}
+.metric-none {
+  display: none;
 }
 
 /* 커뮤니티별 컬럼 */
