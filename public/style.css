@@ -41,13 +41,21 @@ body {
   align-items: center;
   gap: 12px;
 }
-.logo {
-  font-size: 30px;
+.logo-mark {
+  width: 34px;
+  height: 34px;
+  flex-shrink: 0;
+  filter: drop-shadow(0 2px 6px rgba(255, 90, 54, 0.4));
 }
 .brand h1 {
   margin: 0;
   font-size: 22px;
+  font-weight: 800;
   letter-spacing: -0.5px;
+  background: linear-gradient(90deg, var(--accent-2), var(--accent));
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
 }
 .tagline {
   margin: 2px 0 0;
@@ -131,6 +139,24 @@ body {
   font-size: 11px;
   font-weight: 500;
   color: var(--muted);
+}
+.brief-tag {
+  font-size: 10.5px;
+  font-weight: 700;
+  color: var(--accent-2);
+  border: 1px solid rgba(255, 176, 32, 0.4);
+  border-radius: 6px;
+  padding: 1px 7px;
+}
+.brief-desc {
+  margin: 0 0 10px;
+  font-size: 12.5px;
+  line-height: 1.55;
+  color: var(--muted);
+}
+.brief-desc b {
+  color: var(--text);
+  font-weight: 700;
 }
 .brief-body {
   font-size: 13.5px;

@@ -145,25 +145,29 @@ function miniMarkdown(md = "") {
     .replace(/\n/g, "<br>");
 }
 
+const BRIEF_DESC = `<p class="brief-desc">지금 여러 커뮤니티에서 가장 뜨거운 이슈를 AI가 테마별로 묶어 <b>30초 요약</b>으로 정리해 드립니다. 긴 글·댓글을 다 읽지 않아도 흐름이 한눈에.</p>`;
+
 function renderBriefing(data) {
   const el = $("#briefing");
   const b = data.briefing;
-  if (data.briefingEnabled === false) {
-    el.hidden = false;
-    el.innerHTML = `<div class="brief-head">🤖 AI 브리핑</div>
-      <p class="brief-off">환경변수 <code>ANTHROPIC_API_KEY</code>를 설정하면 핫이슈 자동 요약이 켜집니다.</p>`;
-    return;
-  }
-  if (!b || (!b.text && !b.error)) {
-    el.hidden = true;
-    return;
-  }
   el.hidden = false;
-  if (b.error) {
-    el.innerHTML = `<div class="brief-head">🤖 AI 브리핑</div><p class="brief-off">요약 생성 실패: ${esc(b.error)}</p>`;
+
+  if (data.briefingEnabled === false) {
+    el.innerHTML = `<div class="brief-head">🤖 오늘의 핫이슈 브리핑 <span class="brief-tag">준비 중</span></div>
+      ${BRIEF_DESC}
+      <p class="brief-off">관리자: 환경변수 <code>ANTHROPIC_API_KEY</code>를 설정하면 자동 요약이 켜집니다.</p>`;
+    return;
+  }
+  if (b && b.error) {
+    el.innerHTML = `<div class="brief-head">🤖 오늘의 핫이슈 브리핑</div>${BRIEF_DESC}<p class="brief-off">요약 생성 실패: ${esc(b.error)}</p>`;
+    return;
+  }
+  if (!b || !b.text) {
+    el.innerHTML = `<div class="brief-head">🤖 오늘의 핫이슈 브리핑</div>${BRIEF_DESC}<p class="brief-off">첫 브리핑을 준비하고 있어요…</p>`;
     return;
   }
   el.innerHTML = `<div class="brief-head">🤖 오늘의 핫이슈 브리핑 <span class="brief-meta">${esc(b.model || "")} · ${timeAgo(b.generatedAt)}</span></div>
+    ${BRIEF_DESC}
     <div class="brief-body">${miniMarkdown(b.text)}</div>`;
 }
 
