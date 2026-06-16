@@ -10,6 +10,20 @@ const hasData = (id) => (SRC_COUNTS[id] ?? 1) > 0;
 
 const $ = (sel) => document.querySelector(sel);
 
+function toast(msg) {
+  let el = $("#toast");
+  if (!el) {
+    el = document.createElement("div");
+    el.id = "toast";
+    el.className = "toast";
+    document.body.appendChild(el);
+  }
+  el.textContent = msg;
+  el.classList.add("show");
+  clearTimeout(el._t);
+  el._t = setTimeout(() => el.classList.remove("show"), 2000);
+}
+
 function timeAgo(ms) {
   const diff = Date.now() - ms;
   const m = Math.floor(diff / 60000);
@@ -211,6 +225,27 @@ async function init() {
     toTop.hidden = window.scrollY < 400;
   });
   toTop.addEventListener("click", () => window.scrollTo({ top: 0, behavior: "smooth" }));
+
+  // 공유: 모바일은 네이티브 공유시트(카톡 등), 데스크톱은 링크 복사
+  $("#shareBtn")?.addEventListener("click", async () => {
+    const data = {
+      title: "🔥 핫이슈",
+      text: "한국 커뮤니티 핫이슈 실시간 모아보기",
+      url: location.origin + "/",
+    };
+    try {
+      if (navigator.share) {
+        await navigator.share(data);
+        window.gtag?.("event", "share", { method: "web_share" });
+      } else {
+        await navigator.clipboard.writeText(data.url);
+        toast("링크가 복사됐어요 📋");
+        window.gtag?.("event", "share", { method: "copy" });
+      }
+    } catch {
+      /* 사용자가 취소 */
+    }
+  });
 
   $("#refreshBtn").addEventListener("click", async () => {
     $("#refreshBtn").textContent = "↻ 수집 중…";
