@@ -196,7 +196,7 @@ async function init() {
   renderFilters();
   renderCatFilters();
   await load();
-  setInterval(load, 60000); // 1분마다 화면 갱신
+  setInterval(load, 30000); // 30초마다 화면 갱신(체감 실시간)
 
   // 위로 가기 버튼
   const toTop = $("#toTop");
@@ -214,3 +214,8 @@ async function init() {
 }
 
 init();
+
+// PWA 서비스워커 등록(홈 화면에 추가 + 오프라인 셸)
+if ("serviceWorker" in navigator) {
+  window.addEventListener("load", () => navigator.serviceWorker.register("/sw.js").catch(() => {}));
+}

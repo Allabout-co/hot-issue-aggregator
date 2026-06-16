@@ -1,0 +1,15 @@
+{
+  "name": "핫이슈 — 한국 커뮤니티 실시간",
+  "short_name": "핫이슈",
+  "description": "여러 커뮤니티의 지금 가장 뜨거운 글을 한 화면에서 실시간으로.",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "background_color": "#0e1117",
+  "theme_color": "#0e1117",
+  "icons": [
+    { "src": "/icon-192.png", "sizes": "192x192", "type": "image/png" },
+    { "src": "/icon-512.png", "sizes": "512x512", "type": "image/png" },
+    { "src": "/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ]
+}

@@ -67,7 +67,7 @@ app.post("/api/ingest", (req, res) => {
 
 await loadFromDisk();
 await loadSent();
-startScheduler(5 * 60 * 1000); // 5분마다 갱신
+startScheduler(2 * 60 * 1000); // 2분마다 갱신(체감 실시간)
 
 app.listen(PORT, () => {
   console.log(`\n🔥 핫이슈 애그리게이터: http://localhost:${PORT}\n`);
