@@ -4,6 +4,25 @@ import * as cheerio from "cheerio";
 
 const clean = (s = "") => s.replace(/\s+/g, " ").trim();
 
+// 펨코 regdate("13 분 전" / "1 시간 전" / "HH:MM" / "YYYY.MM.DD") → 절대 시각(ms)
+function parseFmTime(reg) {
+  const t = clean(reg);
+  let m;
+  if (/방금/.test(t)) return Date.now();
+  if ((m = t.match(/(\d+)\s*분\s*전/))) return Date.now() - Number(m[1]) * 60_000;
+  if ((m = t.match(/(\d+)\s*시간\s*전/))) return Date.now() - Number(m[1]) * 3_600_000;
+  if ((m = t.match(/(\d+)\s*일\s*전/))) return Date.now() - Number(m[1]) * 86_400_000;
+  if ((m = t.match(/(\d{4})\.(\d{1,2})\.(\d{1,2})/)))
+    return new Date(+m[1], +m[2] - 1, +m[3]).getTime();
+  if ((m = t.match(/(\d{1,2}):(\d{2})/))) {
+    const d = new Date();
+    d.setHours(+m[1], +m[2], 0, 0);
+    if (d.getTime() > Date.now()) d.setDate(d.getDate() - 1); // 미래면 어제로
+    return d.getTime();
+  }
+  return null;
+}
+
 // 에펨코리아 베스트
 export function fmkorea(html, source) {
   const $ = cheerio.load(html);
@@ -19,7 +38,12 @@ export function fmkorea(html, source) {
     const comments = m ? Number(m[1]) : 0;
     title = title.replace(/\s*\[\d+\]\s*$/, "");
     if (title.length < 3) return;
+    // 실제 작성시간(regdate). 없으면 순번 기반 폴백.
     const idx = out.length;
+    const ts = parseFmTime($(el).find(".regdate").first().text());
+    // 썸네일(img.thumb)
+    let thumb = $(el).find("img.thumb").attr("data-original") || $(el).find("img.thumb").attr("src");
+    if (thumb && thumb.startsWith("//")) thumb = "https:" + thumb;
     out.push({
       id: `${source.id}:${href}`,
       sourceId: source.id,
@@ -27,10 +51,9 @@ export function fmkorea(html, source) {
       link: href.startsWith("http") ? href : "https://www.fmkorea.com" + href,
       author: null,
       category: null,
-      thumbnail: null,
+      thumbnail: thumb || null,
       summary: "",
-      // 베스트 목록 순서를 최신순처럼 반영(앞순위 = 더 높은 점수)
-      publishedAt: Date.now() - idx * 90_000,
+      publishedAt: ts ?? Date.now() - idx * 90_000,
       signals: { comments, views: 0, recommends: 0 },
     });
   });
