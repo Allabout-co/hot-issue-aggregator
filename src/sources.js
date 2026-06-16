@@ -19,7 +19,7 @@ export const SOURCES = [
     type: "rss",
     url: "https://www.ppomppu.co.kr/rss.php?id=freeboard",
     weight: 0.9,
-    color: "#e0563b",
+    color: "#d6332e",
     badge: "PP",
   },
   {
@@ -37,7 +37,7 @@ export const SOURCES = [
     type: "rss",
     url: "https://www.ppomppu.co.kr/rss.php?id=ppomppu",
     weight: 0.8,
-    color: "#e08a3b",
+    color: "#e8632e",
     badge: "PP",
   },
   {
@@ -57,7 +57,7 @@ export const SOURCES = [
     scraper: "fmkorea",
     url: "https://www.fmkorea.com/index.php?mid=best",
     weight: 0.95,
-    color: "#1f8a4c",
+    color: "#2563d6",
     badge: "FM",
   },
   {
