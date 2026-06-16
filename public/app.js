@@ -154,8 +154,7 @@ function renderBriefing(data) {
 
   if (data.briefingEnabled === false) {
     el.innerHTML = `<div class="brief-head">🤖 오늘의 핫이슈 브리핑 <span class="brief-tag">준비 중</span></div>
-      ${BRIEF_DESC}
-      <p class="brief-off">관리자: 환경변수 <code>ANTHROPIC_API_KEY</code>를 설정하면 자동 요약이 켜집니다.</p>`;
+      ${BRIEF_DESC}`;
     return;
   }
   if (b && b.error) {
